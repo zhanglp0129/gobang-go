@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import {computed, onMounted, reactive, ref} from "vue";
+import {computed, onMounted, reactive, ref, watch, watchEffect} from "vue";
 import {ElMessage} from "element-plus";
+import {useRoute} from "vue-router";
+import {Predict} from "../../../../wailsjs/go/main/App";
+
+const route = useRoute()
+const first = Number(route.query.first)
+const back = Number(route.query.back)
 
 onMounted(() => {
   initBoard()
@@ -41,11 +47,34 @@ const initBoard = () => {
 // 获取棋盘数据
 const boards = defineModel()
 const cur = defineModel('cur')
+const isAI = computed(() => {
+  return (cur.value === 1 && first !== 0) || (cur.value === -1 && back !== 0)
+})
+
+watch(cur, async () => {
+  // 判断是否为AI下棋
+  let res
+  if (cur.value === 1 && first !== 0) {
+    res = await Predict(boards.value, cur.value, first)
+  } else if (cur.value === -1 && back !== 0) {
+    res = await Predict(boards.value, cur.value, back)
+  } else {
+    return
+  }
+  console.log(res)
+  if (res[0]==-1 || res[1]==-1) {
+    ElMessage.error('AI下棋失败')
+    return
+  }
+  down(res[0], res[1])
+}, {
+  immediate: true
+})
 
 // 根据鼠标位置，判断可以落子
 const curMouse = reactive([-1, -1])
 const canDown = computed(() => {
-  if (cur.value === 0) {
+  if (cur.value === 0 || isAI.value) {
     return false
   }
   let x=-1, y=-1
@@ -97,9 +126,9 @@ const gameOver = (x, y): boolean => {
   return false
 }
 
-// 落子
-const down = (e) => {
-  if (cur.value === 0) {
+// 鼠标落子
+const mouseDown = (e) => {
+  if (cur.value === 0 || isAI.value) {
     return
   }
   // 获取当前落子位置，每个棋子半径为15
@@ -115,6 +144,10 @@ const down = (e) => {
   if (x==-1 || y==-1 || boards.value[x][y]!=0) {
     return
   }
+  down(x, y)
+}
+// 下棋
+const down = (x, y) => {
   boards.value[x][y] = cur.value
   cur.value *= -1
   if (gameOver(x, y)) {
@@ -127,7 +160,7 @@ const down = (e) => {
 
 <template>
   <div class="board">
-    <canvas id="canvas" width="650" height="650" @click="down" :style="{
+    <canvas id="canvas" width="650" height="650" @click="mouseDown" :style="{
       cursor: canDown?'pointer':'default'
     }" @mousemove="curMouse[0]=$event.offsetX;curMouse[1]=$event.offsetY"/>
     <img src="../../../assets/images/black-chess.png" alt="" v-for="i in 225"

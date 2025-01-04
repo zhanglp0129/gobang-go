@@ -8,12 +8,7 @@ const handSelect = reactive({
   back: 0
 })
 // 每种选择对应的值
-const selects = [
-  {value: 0, label: '人类'},
-  {value: 1, label: '简单AI'},
-  {value: 2, label: '中等AI'},
-  {value: 3, label: '困难AI'},
-]
+const selects = ['人类', '简单AI', '中等AI', '困难AI']
 
 // 开始游戏
 const start = () => {
@@ -41,15 +36,15 @@ const reset = () => {
       <el-form class="form" label-width="80px">
         <el-form-item label="先手">
           <el-radio-group v-model="handSelect.first">
-            <el-radio v-for="item in selects" :label="item.label"
-                      :value="item.value" :disabled="item.value!=0"
+            <el-radio v-for="(item, i) in selects" :label="item"
+                      :value="i"
             ></el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="后手">
           <el-radio-group v-model="handSelect.back">
-            <el-radio v-for="item in selects" :label="item.label"
-                      :value="item.value" :disabled="item.value!=0"
+            <el-radio v-for="(item, i) in selects" :label="item"
+                      :value="i"
             ></el-radio>
           </el-radio-group>
         </el-form-item>

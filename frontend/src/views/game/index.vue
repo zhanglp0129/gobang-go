@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import Board from './board/index.vue'
 import router from "../../router";
-import {ref} from "vue";
+import {computed, ref} from "vue";
+import {useRoute} from "vue-router";
+
+const route = useRoute()
+const first = Number(route.query.first)
+const back = Number(route.query.back)
+const selects = ['人类', '简单AI', '中等AI', '困难AI']
 
 // 当前棋盘，-1表示白棋，1表示黑棋，0表示空位
 const boards = ref([])
@@ -14,6 +20,9 @@ for (let i=0;i<15;i++) {
 }
 // 当前应该下棋的一方 1黑棋 -1白棋 0禁止下棋
 const cur = ref(1)
+const isAI = computed(() => {
+  return (cur.value === 1 && first !== 0) || (cur.value === -1 && back !== 0)
+})
 
 // 返回到选择界面
 const goSelect = () => {
@@ -28,15 +37,24 @@ const reset = () => {
 <template>
   <div class="game">
     <div class="title">
-      <span>正在游戏</span>
+      <span v-show="isAI">AI正在思考</span>
+      <span v-show="!isAI">请下棋</span>
     </div>
     <div class="middle">
       <div class="left">
         <Board v-model="boards" v-model:cur="cur"></Board>
       </div>
       <div class="right">
-        <el-button @click="reset">重新游戏</el-button>
-        <el-button @click="goSelect">返回</el-button>
+        <div class="top">
+          <div v-if="cur===0" :style="{color: 'red'}">禁止下棋</div>
+          <div v-else>当前：{{cur==1?'黑棋':'白棋'}} ({{selects[cur==1?first:back]}})</div>
+          <div>先手(黑棋)：{{selects[first]}}</div>
+          <div>后手(白棋)：{{selects[back]}}</div>
+        </div>
+        <div class="button">
+          <el-button @click="reset">重新游戏</el-button>
+          <el-button @click="goSelect">返回</el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -55,12 +73,19 @@ const reset = () => {
   .middle {
     display: flex;
     margin-top: 20px;
-    justify-content: space-between;
     .left {
       margin-left: 20px;
     }
     .right {
-      margin-right: 20px;
+      margin-left: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      .top {
+        div {
+          margin-bottom: 20px;
+        }
+      }
     }
   }
 }
