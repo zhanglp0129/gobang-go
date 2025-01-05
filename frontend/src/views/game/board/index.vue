@@ -21,6 +21,7 @@ const initBoard = () => {
   // 绘制背景
   ctx.fillStyle = 'rgb(227, 189, 10)'
   ctx.fillRect(0, 0, 650, 650)
+  ctx.fillStyle = 'black'
   // 画横线，A-O
   ctx.font = '20px Arial'
   for (let i=0;i<15;i++) {
@@ -39,7 +40,6 @@ const initBoard = () => {
   // 画圆点
   function drawDot(x: number, y: number) {
     ctx.beginPath()
-    ctx.fillStyle = 'black'
     ctx.arc(45+40*(x-1), 45+40*(y-1), 4, 0, 2*Math.PI)
     ctx.fill()
   }

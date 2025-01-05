@@ -48,8 +48,6 @@ const reset = () => {
         <div class="top">
           <div v-if="cur===0" :style="{color: 'red'}">禁止下棋</div>
           <div v-else>当前：{{cur==1?'黑棋':'白棋'}} ({{selects[cur==1?first:back]}})</div>
-          <div>先手(黑棋)：{{selects[first]}}</div>
-          <div>后手(白棋)：{{selects[back]}}</div>
         </div>
         <div class="button">
           <el-button @click="reset">重新游戏</el-button>
