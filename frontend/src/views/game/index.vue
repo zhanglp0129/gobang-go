@@ -37,8 +37,9 @@ const reset = () => {
 <template>
   <div class="game">
     <div class="title">
-      <span v-show="isAI">AI正在思考</span>
-      <span v-show="!isAI">请下棋</span>
+      <span v-if="cur===0" :style="{color: 'red'}">游戏结束</span>
+      <span v-else-if="isAI">AI正在思考</span>
+      <span v-else>请下棋</span>
     </div>
     <div class="middle">
       <div class="left">
@@ -46,8 +47,7 @@ const reset = () => {
       </div>
       <div class="right">
         <div class="top">
-          <div v-if="cur===0" :style="{color: 'red'}">禁止下棋</div>
-          <div v-else>当前：{{cur==1?'黑棋':'白棋'}} ({{selects[cur==1?first:back]}})</div>
+          <div v-if="cur !== 0">当前：{{cur==1?'黑棋':'白棋'}} ({{selects[cur==1?first:back]}})</div>
         </div>
         <div class="button">
           <el-button @click="reset">重新游戏</el-button>

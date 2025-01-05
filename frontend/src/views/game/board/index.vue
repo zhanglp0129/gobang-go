@@ -191,7 +191,6 @@ const down = (x, y) => {
   }
   cur.value *= -1
   if (gameOver(x, y)) {
-    ElMessage.success(`游戏结束，${cur.value === 1?'黑棋':'白棋'}胜利`)
     cur.value = 0
   }
 }
