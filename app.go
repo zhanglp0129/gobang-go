@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"time"
 )
 
 // App struct
@@ -23,14 +22,18 @@ func (a *App) startup(ctx context.Context) {
 
 // Predict 预测下一步应该下在哪里。boards表示棋盘，cur表示当前轮到谁下了 1黑棋 -1白棋，difficulty表示难度
 // 返回值为预测位置的x y坐标
-func (a *App) Predict(boards [15][15]int, cur int, difficulty int) [2]int {
-	time.Sleep(5 * time.Second)
+func (a *App) Predict(boards [][]int, cur int, difficulty int) [2]int {
+	if (cur != -1 && cur != 1) || difficulty <= 0 || difficulty > 3 {
+		return [2]int{-1, -1}
+	}
+	// 校验切片长度
+	if len(boards) != 15 {
+		return [2]int{-1, -1}
+	}
 	for i := range boards {
-		for j := range boards[i] {
-			if boards[i][j] == 0 {
-				return [2]int{i, j}
-			}
+		if len(boards[i]) != 15 {
+			return [2]int{-1, -1}
 		}
 	}
-	return [2]int{-1, -1}
+	return getMaxScoreNode(boards, cur, difficulty, 0.01)
 }

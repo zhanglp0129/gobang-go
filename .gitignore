@@ -4,3 +4,4 @@ frontend/dist
 .idea
 .vscode
 .DS_Store
+*.syso
