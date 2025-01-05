@@ -3,6 +3,8 @@ import {computed, onMounted, reactive, ref, watch, watchEffect} from "vue";
 import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
 import {Predict} from "../../../../wailsjs/go/main/App";
+import blackChess from '../../../assets/images/black-chess.png'
+import whiteChess from '../../../assets/images/white-chess.png'
 
 const route = useRoute()
 const first = Number(route.query.first)
@@ -16,6 +18,9 @@ const initBoard = () => {
   // 绘制棋盘
   ctx = document.getElementById('canvas').getContext('2d')
   // 总宽高为650*650，一共14个格子，每个格子40px，剩余90。边缘45px
+  // 绘制背景
+  ctx.fillStyle = 'rgb(227, 189, 10)'
+  ctx.fillRect(0, 0, 650, 650)
   // 画横线，A-O
   ctx.font = '20px Arial'
   for (let i=0;i<15;i++) {
@@ -34,6 +39,7 @@ const initBoard = () => {
   // 画圆点
   function drawDot(x: number, y: number) {
     ctx.beginPath()
+    ctx.fillStyle = 'black'
     ctx.arc(45+40*(x-1), 45+40*(y-1), 4, 0, 2*Math.PI)
     ctx.fill()
   }
@@ -51,6 +57,8 @@ const isAI = computed(() => {
   return (cur.value === 1 && first !== 0) || (cur.value === -1 && back !== 0)
 })
 
+let oldX = -1
+let oldY = -1
 watch(cur, async () => {
   // 判断是否为AI下棋
   let res
@@ -62,7 +70,7 @@ watch(cur, async () => {
     return
   }
   console.log(res)
-  if (res[0]==-1 || res[1]==-1) {
+  if (res[0]===-1 || res[1]===-1 || boards.value[res[0]][res[1]]!==0) {
     ElMessage.error('AI下棋失败')
     return
   }
@@ -149,6 +157,38 @@ const mouseDown = (e) => {
 // 下棋
 const down = (x, y) => {
   boards.value[x][y] = cur.value
+  // 绘制棋子
+  let img = new Image()
+  if (boards.value[x][y] == 1) {
+    img.src = blackChess
+  } else if (boards.value[x][y] == -1) {
+    img.src = whiteChess
+  }
+  img.onload = () => {
+    ctx.drawImage(img, x*40+45-15, y*40+45-15, 30, 30)
+    // 绘制红色的点，显示当前下的棋子
+    ctx.fillStyle = 'red'
+    ctx.beginPath()
+    ctx.arc(45+40*x, 45+40*y, 2, 0, 2*Math.PI)
+    ctx.fill()
+    // 擦除先前绘制的红点
+    if (oldX !== -1 && oldY !== -1) {
+      let oldImg = new Image()
+      if (boards.value[oldX][oldY] == 1) {
+        oldImg.src = blackChess
+      } else if (boards.value[oldX][oldY] == -1) {
+        oldImg.src = whiteChess
+      }
+      oldImg.onload = () => {
+        ctx.drawImage(oldImg, oldX*40+45-15, oldY*40+45-15, 30, 30)
+        oldX = x
+        oldY = y
+      }
+    } else {
+      oldX = x
+      oldY = y
+    }
+  }
   cur.value *= -1
   if (gameOver(x, y)) {
     ElMessage.success(`游戏结束，${cur.value === 1?'黑棋':'白棋'}胜利`)
@@ -163,27 +203,11 @@ const down = (x, y) => {
     <canvas id="canvas" width="650" height="650" @click="mouseDown" :style="{
       cursor: canDown?'pointer':'default'
     }" @mousemove="curMouse[0]=$event.offsetX;curMouse[1]=$event.offsetY"/>
-    <img src="../../../assets/images/black-chess.png" alt="" v-for="i in 225"
-         :key="i" v-show="boards[Math.floor((i-1)/15)][(i-1)%15] === 1" :style="{
-           left: 45+40*Math.floor((i-1)/15)-15+'px',
-           top: 45+40*((i-1)%15)-15+'px'
-         }">
-    <img src="../../../assets/images/white-chess.png" alt="" v-for="i in 225"
-         :key="i" v-show="boards[Math.floor((i-1)/15)][(i-1)%15] === -1" :style="{
-           left: 45+40*Math.floor((i-1)/15)-15+'px',
-           top: 45+40*((i-1)%15)-15+'px'
-         }">
   </div>
 </template>
 
 <style scoped lang="scss">
 .board {
-  position: relative;
-  #canvas {
-    background-color: rgb(227, 189, 10);
-  }
-  img {
-    position: absolute;
-  }
+
 }
 </style>
