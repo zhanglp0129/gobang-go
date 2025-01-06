@@ -5,3 +5,6 @@ frontend/dist
 .vscode
 .DS_Store
 *.syso
+gobang-model.json
+venv
+*.exe

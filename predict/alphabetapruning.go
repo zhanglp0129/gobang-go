@@ -1,4 +1,4 @@
-package main
+package predict
 
 import (
 	"github.com/emirpasic/gods/v2/queues/linkedlistqueue"
@@ -6,7 +6,7 @@ import (
 	"math/rand"
 )
 
-func getMaxScoreNode(boards [][]int, cur int, difficulty int, noise float64) [2]int {
+func GetMaxScoreNode(boards [][]int, cur int, difficulty int, noise float64) [2]int {
 	nextNodes := getNextNodes(boards)
 	// 判断是否为初次落子
 	if len(nextNodes) == 0 && cur == BlackChess && boards[0][0] == Empty {

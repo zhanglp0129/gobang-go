@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"gobang-go/predict"
 )
 
 // App struct
@@ -35,5 +36,5 @@ func (a *App) Predict(boards [][]int, cur int, difficulty int) [2]int {
 			return [2]int{-1, -1}
 		}
 	}
-	return getMaxScoreNode(boards, cur, difficulty, 0.01)
+	return predict.GetMaxScoreNode(boards, cur, difficulty, 0)
 }
