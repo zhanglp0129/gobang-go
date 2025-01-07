@@ -65,6 +65,11 @@ if __name__ == '__main__':
                 loaded_params = json.load(f)
             state_dict = {name: torch.tensor(param) for name, param in loaded_params.items()}
             model.load_state_dict(state_dict)
+        else:
+            # 保存模型
+            model_params = {name: param.detach().numpy().tolist() for name, param in model.state_dict().items()}
+            with open("gobang-model.json", "w") as f:
+                json.dump(model_params, f)
         # 定义超参数
         epochs = 20
         criterion = nn.MSELoss()
@@ -75,6 +80,7 @@ if __name__ == '__main__':
         model.train()
         total_loss = 0.0
         for epoch in range(epochs):
+            s = 0.0
             for x, y in train_loader:
                 # 前向传播
                 outputs = model(x)
@@ -88,7 +94,8 @@ if __name__ == '__main__':
                 optimizer.step()  # 更新参数
 
                 # 记录损失
-                total_loss += loss.item()
+                s += loss.item()
+            total_loss += s/epochs
         print(total_loss)
         # 保存模型
         model_params = {name: param.detach().numpy().tolist() for name, param in model.state_dict().items()}

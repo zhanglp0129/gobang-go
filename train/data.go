@@ -16,8 +16,10 @@ func GetData(minData int, difficulty int, noise float64) []BoardData {
 		data, win := Play(first, back, noise)
 		// 数据增强
 		for i := range data {
+			label := win
 			if i%2 == 1 {
 				// 白棋
+				label = -win
 				for j := 0; j < 15; j++ {
 					for k := 0; k < 15; k++ {
 						data[i][j][k] = -data[i][j][k]
@@ -28,7 +30,7 @@ func GetData(minData int, difficulty int, noise float64) []BoardData {
 			for j := range d {
 				res = append(res, BoardData{
 					Feature: d[j],
-					Label:   win,
+					Label:   label,
 				})
 			}
 		}
