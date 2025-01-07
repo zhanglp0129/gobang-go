@@ -74,7 +74,7 @@ if __name__ == '__main__':
         epochs = 20
         criterion = nn.MSELoss()
         optimizer = optim.Adam(model.parameters(), lr=0.001)  # Adam优化器
-        train_dataset = GobangDataset(min_data=1000, difficulty=1, noise=0.02)
+        train_dataset = GobangDataset(min_data=1000, difficulty=1, noise=0.0001)
         train_loader = DataLoader(train_dataset, batch_size=32)
         # 训练模型
         model.train()

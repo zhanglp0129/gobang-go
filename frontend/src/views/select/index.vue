@@ -5,7 +5,8 @@ import router from "../../router";
 // 先手后手的选择
 const handSelect = reactive({
   first: 0,
-  back: 0
+  back: 0,
+  model: 1
 })
 // 每种选择对应的值
 const selects = ['人类', '简单AI', '中等AI', '困难AI']
@@ -46,6 +47,12 @@ const reset = () => {
             <el-radio v-for="(item, i) in selects" :label="item"
                       :value="i"
             ></el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="AI模型">
+          <el-radio-group v-model="handSelect.model">
+            <el-radio label="传统模型" :value="1"></el-radio>
+            <el-radio label="卷积模型" :value="2" disabled></el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item>

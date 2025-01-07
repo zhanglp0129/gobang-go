@@ -9,6 +9,7 @@ import whiteChess from '../../../assets/images/white-chess.png'
 const route = useRoute()
 const first = Number(route.query.first)
 const back = Number(route.query.back)
+const model = Number(route.query.model)
 
 onMounted(() => {
   initBoard()
@@ -63,9 +64,9 @@ watch(cur, async () => {
   // 判断是否为AI下棋
   let res
   if (cur.value === 1 && first !== 0) {
-    res = await Predict(boards.value, cur.value, first)
+    res = await Predict(boards.value, cur.value, first, model)
   } else if (cur.value === -1 && back !== 0) {
-    res = await Predict(boards.value, cur.value, back)
+    res = await Predict(boards.value, cur.value, back, model)
   } else {
     return
   }

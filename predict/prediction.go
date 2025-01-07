@@ -6,64 +6,78 @@ import (
 	"math/rand"
 )
 
-func GetMaxScoreNode(boards [][]int, cur int, difficulty int, noise float64) [2]int {
-	nextNodes := getNextNodes(boards)
+type Prediction struct {
+	Boards     [][]int
+	Cur        int
+	Difficulty int
+	Noise      float64
+	Model      Model
+}
+
+func (p *Prediction) GetMaxScoreNode() [2]int {
+	nextNodes := getNextNodes(p.Boards)
 	// 判断是否为初次落子
-	if len(nextNodes) == 0 && cur == BlackChess && boards[0][0] == Empty {
+	if len(nextNodes) == 0 && p.Cur == BlackChess && p.Boards[7][7] == Empty {
 		return [2]int{7, 7}
 	}
-	maxNode, maxScore := [2]int{-1, -1}, MinScore
-	noise = math.Abs(noise)
+	maxNodes, maxScore := make([][2]int, 0), MinScore
+	p.Noise = math.Abs(p.Noise)
 	for _, next := range nextNodes {
-		score := alphaBeta(boards, next, cur, MinScore, MaxScore, true, difficulty-1, noise)
+		p.Boards[next[0]][next[1]] = p.Cur
+		score := p.alphaBeta(MinScore, MaxScore, false, p.Difficulty)
 		if score > maxScore {
 			maxScore = score
-			maxNode = next
+			maxNodes = [][2]int{next}
+		} else if score == maxScore {
+			maxNodes = append(maxNodes, next)
 		}
+		p.Boards[next[0]][next[1]] = Empty
 	}
-	return maxNode
+	if len(maxNodes) == 0 {
+		return [2]int{-1, -1}
+	}
+	return maxNodes[rand.Int()%len(maxNodes)]
 }
 
 // 运行alpha beta剪枝算法。depth为最大搜索层数，即最大递归深度
 // maxPlayer是否为极大化玩家。node为当前结点，即当前下棋位置
-func alphaBeta(boards [][]int, node [2]int, cur int, alpha, beta float64, maxPlayer bool, depth int, noise float64) float64 {
+func (p *Prediction) alphaBeta(alpha, beta float64, maxPlayer bool, depth int) float64 {
 	if depth == 0 {
 		// 到达最大深度
-		return evaluate(boards, node, cur) + min(noise, max(-noise, rand.NormFloat64()*noise/3))
+		return p.Model.Evaluate(p.Boards, p.Cur, p.Noise, !maxPlayer)
 	}
 
-	boards[node[0]][node[1]] = cur
-	nextNodes := getNextNodes(boards)
+	nextNodes := getNextNodes(p.Boards)
 	if len(nextNodes) == 0 {
-		boards[node[0]][node[1]] = 0
-		return evaluate(boards, node, cur) + min(noise, max(-noise, rand.NormFloat64()*noise/3))
+		return p.Model.Evaluate(p.Boards, p.Cur, p.Noise, !maxPlayer)
 	}
-	var value float64
 	if maxPlayer {
 		maxEval := MinScore
 		for _, next := range nextNodes {
-			eval := alphaBeta(boards, next, -1*cur, alpha, beta, false, depth-1, noise)
+			p.Boards[next[0]][next[1]] = p.Cur
+			eval := p.alphaBeta(alpha, beta, false, depth-1)
 			maxEval = max(maxEval, eval)
 			alpha = max(alpha, eval)
+			p.Boards[next[0]][next[1]] = Empty
 			if beta <= alpha {
 				break
 			}
 		}
-		value = maxEval
+		return maxEval
 	} else {
 		minEval := MaxScore
 		for _, next := range nextNodes {
-			eval := alphaBeta(boards, next, -1*cur, alpha, beta, true, depth-1, noise)
+			p.Boards[next[0]][next[1]] = p.Cur
+			eval := p.alphaBeta(alpha, beta, true, depth-1)
 			minEval = min(minEval, eval)
 			beta = min(beta, eval)
+			p.Boards[next[0]][next[1]] = Empty
 			if beta <= alpha {
 				break
 			}
 		}
-		value = minEval
+		return minEval
 	}
-	boards[node[0]][node[1]] = 0
-	return value
 }
 
 // 获取所有下一个结点。采用广度优先搜索，获取所有4个格子以内存在棋子的格子，
@@ -74,7 +88,7 @@ func getNextNodes(boards [][]int) [][2]int {
 	for i := 0; i < 15; i++ {
 		for j := 0; j < 15; j++ {
 			if boards[i][j] != Empty {
-				queue.Enqueue([3]int{i, j, 4})
+				queue.Enqueue([3]int{i, j, 2})
 				mp[[2]int{i, j}] = struct{}{}
 			}
 		}
